@@ -29,11 +29,8 @@ setup(
         'console_scripts': [
             'brainstorm = brainstorm.main:main'
             ],
-        'brainstorm': [
-            #'list buckets = brainstorm.buckets:List',
-            #'list objects = brainstorm.objects:List',
-            #'ls = brainstorm.commands:List',
-            #'set bucket = brainstorm.commands:SetBucket',
+        'brainstorm.commands': [
+            'ls = brainstorm.buckets:Ls',
             ],
         },
     zip_safe=False,

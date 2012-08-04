@@ -15,7 +15,7 @@ class BrainstormApp(App):
         super(BrainstormApp, self).__init__(
                 description='DHO command line tool',
                 version='0.1',
-                command_manager=CommandManager('cliff.demo'),
+                command_manager=CommandManager('brainstorm.commands'),
                 )
 
     def initialize_app(self, argv):
