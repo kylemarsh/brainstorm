@@ -27,9 +27,9 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'brainstorm = brainstorm.cli.main:main'
+            'brainstorm = brainstorm.main:main'
             ],
-        'brainstorm.cli': [
+        'brainstorm': [
             #'list buckets = brainstorm.buckets:List',
             #'list objects = brainstorm.objects:List',
             #'ls = brainstorm.commands:List',
