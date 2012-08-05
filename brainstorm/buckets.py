@@ -88,8 +88,10 @@ class RemoveBucket(Command):
 
     def get_parser(self, prog_name):
         parser = super(RemoveBucket, self).get_parser(prog_name)
-        parser.add_argument('bucketname',
-            help='name of bucket to delete')
+        parser.add_argument('bucketname', help='name of bucket to delete')
+        parser.add_argument('-r', '--recursive', action='store_true',
+            help='force bucket deletion by removing bucket contents first')
+
         return parser
 
     def take_action(self, parsed_args):
@@ -98,8 +100,15 @@ class RemoveBucket(Command):
         if bucket:
             try:
                 self.log.debug('deleting bucket %s' % bucketname)
+                if parsed_args.recursive:
+                    for k in bucket.list():
+                        k.delete()
                 bucket.delete()
             except S3ResponseError:
-                self.log.warn('bucket %s not empty' % bucketname)
+                if not parsed_args.recursive:
+                    self.log.warn('could not remove bucket %s; try --recursive'
+                        % bucketname)
+                else:
+                    self.log.warn('could not remove bucket %s' % bucketname)
         else:
             self.log.warn('could not load bucket %s' % bucketname)
