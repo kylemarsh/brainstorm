@@ -1,5 +1,6 @@
 import logging
 
+from cliff.command import Command
 from cliff.lister import Lister
 
 from brainstorm.main import parse_path
@@ -59,3 +60,20 @@ class Ls(Lister):
             self.log.debug("listing buckets")
             return (['Name'], ([bucket.name]
                     for bucket in self.app.conn.get_all_buckets()))
+
+
+class NewBucket(Command):
+    """Create a new bucket
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(NewBucket, self).get_parser(prog_name)
+        parser.add_argument('bucketname',
+            help='name of bucket to create')
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug('creating bucket %s' % parsed_args.bucketname)
+        self.app.conn.create_bucket(parsed_args.bucketname)

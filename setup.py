@@ -31,6 +31,7 @@ setup(
             ],
         'brainstorm.commands': [
             'ls = brainstorm.buckets:Ls',
+            'new bucket = brainstorm.buckets:NewBucket',
             ],
         },
     zip_safe=False,
