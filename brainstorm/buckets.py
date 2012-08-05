@@ -71,13 +71,22 @@ class NewBucket(Command):
 
     def get_parser(self, prog_name):
         parser = super(NewBucket, self).get_parser(prog_name)
-        parser.add_argument('bucketname',
-            help='name of bucket to create')
+        parser.add_argument('bucketname', help='name of bucket to create')
+        parser.add_argument('--private', dest='policy', const='private',
+            action='store_const', help='create as private bucket')
+        parser.add_argument('--public-read', dest='policy',
+            const='public-read', action='store_const',
+            help='create publicly readable bucket')
+        parser.add_argument('--public-read-write', dest='policy',
+            const='public-read-write', action='store_const',
+            help='create publicly writable bucket')
         return parser
 
     def take_action(self, parsed_args):
         self.log.debug('creating bucket %s' % parsed_args.bucketname)
-        self.app.conn.create_bucket(parsed_args.bucketname)
+        self.app.conn.create_bucket(
+            parsed_args.bucketname,
+            policy=parsed_args.policy)
 
 
 class RemoveBucket(Command):
