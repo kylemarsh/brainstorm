@@ -3,8 +3,10 @@ import logging
 from boto.exception import S3ResponseError
 from cliff.command import Command
 from cliff.lister import Lister
+from cliff.show import ShowOne
 
 from brainstorm.main import parse_path
+from brainstorm.main import parse_acl
 
 
 class Ls(Lister):
@@ -119,5 +121,35 @@ class RemoveBucket(Command):
                         % bucketname)
                 else:
                     self.log.warn('could not remove bucket %s' % bucketname)
+        else:
+            self.log.warn('could not load bucket %s' % bucketname)
+
+
+class ShowBucket(ShowOne):
+    """Show information about a bucket
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(ShowBucket, self).get_parser(prog_name)
+        parser.add_argument('bucketname', help='name of bucket to show')
+        return parser
+
+    def take_action(self, parsed_args):
+        bucketname = parsed_args.bucketname
+        bucket = self.app.conn.lookup(bucketname)
+        rows = ['Name', 'ACLs']
+        data = [bucketname, '']
+        if bucket:
+            try:
+                self.log.debug('looking up acl for %s' % bucketname)
+                acp = bucket.get_acl()
+                for (entity, permissions) in parse_acl(acp):
+                    rows.append('  %s' % entity)
+                    data.append(permissions)
+                return (rows, data)
+            except S3ResponseError:
+                self.log.warn('could not get acl for %s' % bucketname)
         else:
             self.log.warn('could not load bucket %s' % bucketname)

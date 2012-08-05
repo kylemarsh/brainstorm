@@ -36,6 +36,30 @@ class BrainstormApp(App):
             self.log.debug('got an error: %s', err)
 
 
+def parse_acl(acp):
+    """Parse the AccessControlPolicy object returned from a get_acl() call
+    to tell us who has what access in a nice list of tuples.
+
+    :param acp: AccessControlPolicy object returned from get_acl()
+    :paramtype acp: boto.s3.acl.Policy
+    """
+    aggregated_grants = {}
+    parsed_grants = []
+    for grant in acp.acl.grants:
+        if grant.id:
+            grant_list = aggregated_grants.setdefault(grant.id, [])
+            grant_list.append(grant.permission)
+        else:
+            if grant.type == 'Group' and grant.uri.endswith('AllUsers'):
+                grant_list = aggregated_grants.setdefault('Public', [])
+                grant_list.append(grant.permission)
+    for entity, permissions in aggregated_grants.items():
+        parsed_grants.append(
+            (entity, ', '.join((x.lower() for x in permissions))))
+
+    return parsed_grants
+
+
 def parse_path(path, delimiter='/'):
     """Parse paths like bucketname:pre/fix/ into bucket name, prefix and
     delimiter.
