@@ -2,6 +2,8 @@ import logging
 
 from cliff.lister import Lister
 
+from brainstorm.main import parse_path
+
 
 class Ls(Lister):
     """List either buckets or objects, depending on arguments
@@ -11,27 +13,40 @@ class Ls(Lister):
 
     def get_parser(self, prog_name):
         parser = super(Ls, self).get_parser(prog_name)
-        parser.add_argument('buckets', nargs='*',
+        parser.add_argument('buckets', nargs='*', type=parse_path,
             help='list of buckets to show contents of')
         parser.add_argument('--prefix', dest='prefix', nargs='?',
             help='filter results to only show objects starting with <prefix>')
         parser.add_argument('--delimiter', dest='delimiter', nargs='?',
-            help='string to delimit object heirarchies')
+            default='/', help='string to delimit object heirarchies')
         return parser
 
     def take_action(self, parsed_args):
-        if parsed_args.buckets:
+        buckets = parsed_args.buckets
+        if buckets:
             #List contents of specified buckets
             self.log.debug('listing contents of ' +
-                    ' '.join(parsed_args.buckets))
+                ' '.join((x[0] for x in buckets)))
+
             cols = ('Name', 'Size')
             data = []
-            for bucketname in parsed_args.buckets:
+            for (bucketname, prefix) in buckets:
+                delimiter = parsed_args.delimiter
+                if not prefix:
+                    # prefix found on bucket overrides --prefix
+                    prefix = parsed_args.prefix
+                else:
+                    # in order to mimic ls as closely as possible, we should
+                    # append a delimiter to the end of the prefix
+                    # automatically unless they "wildcard" it.
+                    if prefix[-1] != delimiter and prefix[-1] != '*':
+                        prefix += delimiter
+                    prefix = prefix.rstrip('*')
+
                 data.append((bucketname, '----'))
                 bucket = self.app.conn.get_bucket(bucketname)
-                for obj in bucket.list(
-                        delimiter=parsed_args.delimiter,
-                        prefix=parsed_args.prefix):
+                self.log.debug('listing %s:%s' % (bucketname, prefix))
+                for obj in bucket.list(delimiter=delimiter, prefix=prefix):
                     # Warning: buckets can be *huge*. This brings every
                     # matching key in a bucket into memory!
                     try:
