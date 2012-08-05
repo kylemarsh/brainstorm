@@ -1,5 +1,6 @@
 import logging
 
+from boto.exception import S3ResponseError
 from cliff.command import Command
 from cliff.lister import Lister
 
@@ -77,3 +78,28 @@ class NewBucket(Command):
     def take_action(self, parsed_args):
         self.log.debug('creating bucket %s' % parsed_args.bucketname)
         self.app.conn.create_bucket(parsed_args.bucketname)
+
+
+class RemoveBucket(Command):
+    """Delete an existing bucket
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(RemoveBucket, self).get_parser(prog_name)
+        parser.add_argument('bucketname',
+            help='name of bucket to delete')
+        return parser
+
+    def take_action(self, parsed_args):
+        bucketname = parsed_args.bucketname
+        bucket = self.app.conn.lookup(bucketname)
+        if bucket:
+            try:
+                self.log.debug('deleting bucket %s' % bucketname)
+                bucket.delete()
+            except S3ResponseError:
+                self.log.warn('bucket %s not empty' % bucketname)
+        else:
+            self.log.warn('could not load bucket %s' % bucketname)

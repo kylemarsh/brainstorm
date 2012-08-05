@@ -32,6 +32,7 @@ setup(
         'brainstorm.commands': [
             'ls = brainstorm.buckets:Ls',
             'new bucket = brainstorm.buckets:NewBucket',
+            'rmbucket = brainstorm.buckets:RemoveBucket',
             ],
         },
     zip_safe=False,
