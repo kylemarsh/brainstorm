@@ -60,22 +60,13 @@ def parse_acl(acp):
     return parsed_grants
 
 
-def parse_path(path, delimiter='/'):
-    """Parse paths like bucketname:pre/fix/ into bucket name, prefix and
-    delimiter.
+def parse_path(path):
+    """Parse paths like bucketname:objectname
 
     :param paths: list of paths to parse.
     :paramtype paths: [str]
-    :param delimiter: delimiter to use.
-    :paramtype delimiter: str
     """
     (bucketname, prefix) = path.partition(':')[::2]
-    #if prefix and prefix[-1] != delimiter and prefix[-1] != '*':
-        ## Prefixes that don't end in * should end in /
-        #prefix += delimiter
-    #if prefix and prefix[-1] == '*':
-        ## Strip * from prefix now that we have it
-        #prefix = prefix[:-1]
     return (bucketname, prefix)
 
 
