@@ -34,6 +34,7 @@ setup(
             'new bucket = brainstorm.buckets:NewBucket',
             'rmbucket = brainstorm.buckets:RemoveBucket',
             'show bucket = brainstorm.buckets:ShowBucket',
+            'show object = brainstorm.objects:ShowObject',
             ],
         },
     zip_safe=False,
