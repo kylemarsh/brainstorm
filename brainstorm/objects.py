@@ -1,9 +1,42 @@
 import logging
 
+from boto.exception import S3ResponseError
+from cliff.command import Command
 from cliff.show import ShowOne
 
 from brainstorm.main import parse_path
 from brainstorm.main import parse_acl
+
+
+class DeleteObjects(Command):
+    """Delete an existing object
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(DeleteObjects, self).get_parser(prog_name)
+        parser.add_argument('objects', nargs='+', type=parse_path,
+            help='list of objects to delete')
+        return parser
+
+    def take_action(self, parsed_args):
+        for bucketname, keyname in parsed_args.objects:
+            bucket = self.app.conn.lookup(bucketname)
+            if bucket:
+                self.log.debug('looking up key %s in bucket %s'
+                        % (keyname, bucketname))
+                k = bucket.get_key(keyname)
+                if k:
+                    try:
+                        self.log.debug('deleting key %s' % keyname)
+                        k.delete()
+                    except S3ResponseError:
+                        self.log.warn('could not remove key %s' % keyname)
+                else:
+                    self.log.warn('could not load key %s' % keyname)
+            else:
+                self.log.warn('could not load bucket %s' % bucketname)
 
 
 class ShowObject(ShowOne):

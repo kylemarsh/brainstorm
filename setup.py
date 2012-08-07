@@ -35,6 +35,7 @@ setup(
             'rmbucket = brainstorm.buckets:RemoveBucket',
             'show bucket = brainstorm.buckets:ShowBucket',
             'show object = brainstorm.objects:ShowObject',
+            'delete = brainstorm.objects:DeleteObjects',
             ],
         },
     zip_safe=False,
