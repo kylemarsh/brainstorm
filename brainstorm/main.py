@@ -66,8 +66,12 @@ def parse_path(path):
     :param paths: list of paths to parse.
     :paramtype paths: [str]
     """
-    (bucketname, prefix) = path.partition(':')[::2]
-    return (bucketname, prefix)
+    bucketname, objectname = path.partition(':')[::2]
+    if bucketname == '':
+        bucketname = None
+    if objectname == '':
+        objectname = None
+    return (bucketname, objectname)
 
 
 def main(argv=sys.argv[1:]):
