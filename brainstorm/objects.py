@@ -18,10 +18,19 @@ class DeleteObjects(Command):
         parser = super(DeleteObjects, self).get_parser(prog_name)
         parser.add_argument('objects', nargs='+', type=parse_path,
             help='list of objects to delete')
+        parser.add_argument('-b', '--bucket',
+            help='bucket to delete objects from')
         return parser
 
     def take_action(self, parsed_args):
         for bucketname, keyname in parsed_args.objects:
+            if bucketname and not keyname:
+                # something like -b mybucket object1
+                keyname = bucketname
+                bucketname = parsed_args.bucket
+            if not bucketname:
+                # something like -b mybucket :object1
+                bucketname = parsed_args.bucket
             bucket = self.app.conn.lookup(bucketname)
             if bucket:
                 self.log.debug('looking up key %s in bucket %s'
