@@ -9,14 +9,14 @@ from brainstorm.main import parse_path
 from brainstorm.main import parse_acl
 
 
-class Ls(Lister):
+class List(Lister):
     """List either buckets or objects, depending on arguments
     """
 
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(Ls, self).get_parser(prog_name)
+        parser = super(List, self).get_parser(prog_name)
         parser.add_argument('buckets', nargs='*', type=parse_path,
             help='list of buckets to show contents of')
         parser.add_argument('--prefix', dest='prefix', nargs='?',
@@ -65,14 +65,14 @@ class Ls(Lister):
                     for bucket in self.app.conn.get_all_buckets()))
 
 
-class NewBucket(Command):
+class CreateBucket(Command):
     """Create a new bucket
     """
 
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(NewBucket, self).get_parser(prog_name)
+        parser = super(CreateBucket, self).get_parser(prog_name)
         parser.add_argument('bucketname', help='name of bucket to create')
         parser.add_argument('--private', dest='policy', const='private',
             action='store_const', help='create as private bucket')
@@ -100,7 +100,7 @@ class RemoveBucket(Command):
     def get_parser(self, prog_name):
         parser = super(RemoveBucket, self).get_parser(prog_name)
         parser.add_argument('bucketname', help='name of bucket to delete')
-        parser.add_argument('-r', '--recursive', action='store_true',
+        parser.add_argument('-f', '--force', action='store_true',
             help='force bucket deletion by removing bucket contents first')
 
         return parser
@@ -111,13 +111,13 @@ class RemoveBucket(Command):
         if bucket:
             try:
                 self.log.debug('deleting bucket %s' % bucketname)
-                if parsed_args.recursive:
+                if parsed_args.force:
                     for k in bucket.list():
                         k.delete()
                 bucket.delete()
             except S3ResponseError:
-                if not parsed_args.recursive:
-                    self.log.warn('could not remove bucket %s; try --recursive'
+                if not parsed_args.force:
+                    self.log.warn('could not remove bucket %s; try --force'
                         % bucketname)
                 else:
                     self.log.warn('could not remove bucket %s' % bucketname)

@@ -21,7 +21,7 @@ setup(
     provides=[],
     install_requires=['boto', 'cliff'],
     test_suite="nose.collector",
-    tests_require=['nose', 'unittest2'],
+    tests_require=['nose', 'unittest'],
     namespace_packages=[],
     packages=find_packages(),
     include_package_data=True,
@@ -30,9 +30,9 @@ setup(
             'brainstorm = brainstorm.main:main'
             ],
         'brainstorm.commands': [
-            'ls = brainstorm.buckets:Ls',
-            'new bucket = brainstorm.buckets:NewBucket',
-            'rmbucket = brainstorm.buckets:RemoveBucket',
+            'list = brainstorm.buckets:List',
+            'create bucket = brainstorm.buckets:CreateBucket',
+            'remove bucket = brainstorm.buckets:RemoveBucket',
             'show bucket = brainstorm.buckets:ShowBucket',
             'show object = brainstorm.objects:ShowObject',
             'delete = brainstorm.objects:DeleteObjects',
