@@ -31,11 +31,12 @@ setup(
             ],
         'brainstorm.commands': [
             'list = brainstorm.buckets:List',
+            'delete = brainstorm.objects:DeleteObjects',
+            'copy = brainstorm.objects:CopyObject',
             'create bucket = brainstorm.buckets:CreateBucket',
             'remove bucket = brainstorm.buckets:RemoveBucket',
             'show bucket = brainstorm.buckets:ShowBucket',
             'show object = brainstorm.objects:ShowObject',
-            'delete = brainstorm.objects:DeleteObjects',
             ],
         },
     zip_safe=False,
