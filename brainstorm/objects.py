@@ -49,69 +49,35 @@ class DeleteObjects(Command):
                 self.log.warn('could not load bucket %s' % bucketname)
 
 
-class CopyObject(Command):
-    """Copy an object between your local computer and DHO.
+class UploadFile(Command):
+    """Upload a file from your local computer to DHO
     """
 
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(CopyObject, self).get_parser(prog_name)
-        parser.add_argument('source', help='name of source object or file')
-        parser.add_argument('destination',
-            help='name of destination object or file')
+        parser = super(UploadFile, self).get_parser(prog_name)
+        parser.add_argument('source', help='name of source file')
+        parser.add_argument('destination', type=parse_path,
+            help='name of destination object')
+        parser.add_argument('-f', '--force', action='store_true',
+            default=False, help='force overwrite of existing object')
         return parser
 
     def take_action(self, parsed_args):
-        #TODO:
-        src_type = self._path_type(parsed_args.source)
-        dest_type = self._path_type(parsed_args.destination)
-        if src_type == 'file' and dest_type == 'object':
-            self._upload(parsed_args.source, parsed_args.destination)
-        elif src_type == 'object' and dest_type == 'object':
-            self._copy(parsed_args.source, parsed_args.destination)
-        elif src_type == 'object' and dest_type == 'file':
-            self._download(parsed_args.source, parsed_args.destination)
-        else:
-            self.log.warn('looks like you provided two local files. \
-                Just use cp!')
+        source = parsed_args.source
+        bucketname, keyname = parsed_args.destination
+        self.log.info('uploading local file %s to %s:%s'
+            % (source, bucketname, keyname))
 
-    def _path_type(self, path):
-        """Determine if a path is the path to a local file or an object on DHO
-        """
-        if os.stat(path):
-            return 'file'
-        return 'object'
+        bucket = self.app.conn.lookup(bucketname)
+        if not bucket:
+            self.log.error("couldn't get bucket %s" % bucketname)
+            return
 
-    def _upload(self, source, destination):
-        """Copy a local file up to DHO
-
-        :param source: name of file to upload
-        :paramtype source: str
-        :param destination: name of destination object
-        :paramtype destination: str
-        """
-        raise NotImplementedError
-
-    def _copy(self, source, destination):
-        """Copy an object from one place to another on DHO
-
-        :param source: name of source object
-        :paramtype source: str
-        :param destination: name of destination object
-        :paramtype destination: str
-        """
-        raise NotImplementedError
-
-    def _download(self, source, destination):
-        """Copy an object from DHO down to a local file
-
-        :param source: name of object to download
-        :paramtype source: str
-        :param destination: name of destination file
-        :paramtype destination: str
-        """
-        raise NotImplementedError
+        key = bucket.new_key(keyname)
+        key.set_contents_from_filename(source, replace=parsed_args.force)
+        self.log.debug('uploaded successfully')
 
 
 class ShowObject(ShowOne):
