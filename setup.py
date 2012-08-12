@@ -32,6 +32,7 @@ setup(
         'brainstorm.commands': [
             'list = brainstorm.buckets:List',
             'delete = brainstorm.objects:DeleteObjects',
+            'down = brainstorm.objects:DownloadObject',
             'up = brainstorm.objects:UploadFile',
             'create bucket = brainstorm.buckets:CreateBucket',
             'remove bucket = brainstorm.buckets:RemoveBucket',

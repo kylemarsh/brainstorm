@@ -80,6 +80,45 @@ class UploadFile(Command):
         self.log.debug('uploaded successfully')
 
 
+class DownloadObject(Command):
+    """Download an object from DHO to a local file
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(DownloadObject, self).get_parser(prog_name)
+        parser.add_argument('source', type=parse_path,
+            help='name of source object')
+        parser.add_argument('destination', help='name of destination file')
+        parser.add_argument('-f', '--force', action='store_true',
+            default=False, help='force overwrite of existing file')
+        return parser
+
+    def take_action(self, parsed_args):
+        bucketname, keyname = parsed_args.source
+        destination = parsed_args.destination
+
+        self.log.info('downloading %s:%s to local file %s'
+            % (bucketname, keyname, destination))
+
+        if os.path.exists(destination) and not parsed_args.force:
+            self.log.warn('destination exists. Use --force to overwrite')
+            return
+
+        bucket = self.app.conn.lookup(bucketname)
+        if not bucket:
+            self.log.error("couldn't get bucket %s" % bucketname)
+            return
+
+        key = bucket.get_key(keyname)
+        if not key:
+            self.log.error("couldn't get key %s" % keyname)
+            return
+
+        key.get_contents_to_filename(destination)
+
+
 class ShowObject(ShowOne):
     """Show information about an object
     """
