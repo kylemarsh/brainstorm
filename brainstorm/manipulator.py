@@ -7,6 +7,91 @@ from cliff.command import Command
 from brainstorm.main import parse_path
 
 
+#############
+# UNIVERSAL #
+#############
+class SetCannedACL(Command):
+    """Change a bucket or object's ACL to the specified canned value
+    """
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(SetCannedACL, self).get_parser(prog_name)
+        parser.add_argument(
+            'policy',
+            choices=['private', 'public-read', 'public-read-write'],
+            help='Privacy setting to use\n' +
+            "can be one of 'private', 'public-read', or 'public-read-write'")
+        parser.add_argument('targets', nargs='+', type=parse_path,
+            help='list of buckets and objects to set permission for')
+        parser.add_argument('-r', '--recursive', action='store_true',
+            default=False, help='set permission for all objects in bucket')
+        parser.add_argument('-b', '--bucket',
+            help='default bucket to look for objects in')
+        return parser
+
+    def take_action(self, parsed_args):
+        for bucketname, keyname in parsed_args.targets:
+            for target in self._get_targets(bucketname, keyname, parsed_args):
+                self.log.info("setting '%s' on %s (%s)"
+                    % (parsed_args.policy, target.name, target.__class__))
+                target.set_canned_acl(parsed_args.policy)
+
+    def _get_targets(self, bucketname, keyname, args):
+        """Generator returning a list of buckets and keys that should be acted
+        upon given the passed bucketname, keyname, and flags.
+        """
+
+        bucketname = bucketname if bucketname else args.bucket
+        bucket = self.app.conn.lookup(bucketname)
+
+        if keyname:
+            # We have a specific key, just return that if we can find it.
+            if not bucketname:
+                self.log.warn("no bucket to look for %s in!" % keyname)
+                return
+
+            if not bucket:
+                self.log.warn("could not find bucket %s" % bucketname)
+                return
+            else:
+                key = bucket.get_key(keyname)
+                if key:
+                    yield key
+                    return
+                else:
+                    self.log.warn("could not find key %s:%s"
+                        % (bucketname, keyname))
+                    return
+
+        if bucket:
+            # We didn't specify a key to go with this bucket. yield its
+            # contents if recursive mode is on, then return the bucket.
+            if args.recursive:
+                self.log.debug('yielding contents of bucket %s' % bucketname)
+                for key in bucket.list():
+                    yield key
+            yield bucket
+            return
+
+        # We don't have a key specified and bucketname wasn't actually a
+        # bucket. Maybe it's a keyname and the bucket is in --bucket
+        if (args.bucket):
+            bucket = self.app.conn.lookup(args.bucket)
+            key = bucket.get_key(bucketname)
+            if key:
+                yield key
+                return
+            else:
+                self.log.warn("%s is not a key in bucket %s. skipping"
+                    % (bucketname, args.bucket))
+                return
+        else:
+            # Alright, we don't have --bucket either. You just messed up.
+            self.log.warn("could not find bucket %s" % bucketname)
+            return
+
+
 ###########
 # BUCKETS #
 ###########

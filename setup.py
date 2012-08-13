@@ -37,6 +37,7 @@ setup(
             'up = brainstorm.manipulator:UploadFile',
             'create bucket = brainstorm.manipulator:CreateBucket',
             'remove bucket = brainstorm.manipulator:RemoveBucket',
+            'set acl = brainstorm.manipulator:SetCannedACL',
             ],
         },
     zip_safe=False,
