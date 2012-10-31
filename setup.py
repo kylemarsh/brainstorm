@@ -40,5 +40,4 @@ setup(
             'set acl = brainstorm.manipulator:SetCannedACL',
             ],
         },
-    zip_safe=False,
     )
