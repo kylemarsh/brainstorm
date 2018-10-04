@@ -23,7 +23,7 @@ class BrainstormApp(App):
         try:
             self.log.debug('attempting to create connection')
             self.conn = S3Connection(
-                    host='objects-us-west-1.dream.io',
+                    host='objects-us-east-1.dream.io',
                     is_secure=False,
                     calling_format=OrdinaryCallingFormat())
             self.log.debug('connection successfully created')
